@@ -78,7 +78,7 @@ for card in trello_cards:
     if len(trello_comments) != 0:
         print("Found comments. Starting..")
         for comment in trello_comments:
-            print('Creating comment by ' + comment['memberCreator']['username'] + ' to ' + issue.key)
+            print('Creating comment by ' + comment['memberCreator']['username'] + ' on ' + issue.key)
             jira.add_comment(issue, comment['data']['text'])
 
     # attachment fields: url, name
