@@ -52,19 +52,29 @@ trello_cards.sort(key=lambda x: x.card_created_date)
 completed_jira_transition = None
 
 for card in trello_cards:
+    # text == text body of card
+    # print(card.fetch_comments(force=True))
+
+    # fields: url, name
+    # attachments = card.fetch_attachments(force=True)
+
+    jira.add_attachment
+
     issue = {
         "project": {"key": jira_project.key},
         "summary": card.name,
-        "description": card.description,
-        "issuetype": {"name": "Task"}
+        "description": card.desc,
+        "issuetype": {"name": "Task"},
     }
-    issue = jira.create_issue(issue)
-    if completed_jira_transition is None:
-        transitions = jira.transitions(issue)
-        for i, transition in enumerate(transitions):
-            print(str(i) + ". " + transition["name"])
-        completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
 
-    if card.list_id == trello_done_list.id:
-        jira.transition_issue(issue, completed_jira_transition["id"])
-
+    # issue = jira.create_issue(issue)
+    # print(issue.key + " migrated.")
+    # if completed_jira_transition is None:
+    #     transitions = jira.transitions(issue)
+    #     for i, transition in enumerate(transitions):
+    #         print(str(i) + ". " + transition["name"])
+    #     completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
+    #
+    # if card.list_id == trello_done_list.id:
+    #     jira.transition_issue(issue, completed_jira_transition["id"])
+    #     print(issue.key + " moved to " + completed_jira_transition["name"])
