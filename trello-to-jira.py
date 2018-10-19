@@ -46,13 +46,8 @@ print("Using Jira board: " + jira_project.key)
 print("Starting migration..")
 trello_cards = trello_board.all_cards()
 
-
-def sortByCreationDate(x):
-    return x.card_created_date
-
-
 # Sort cards by creation date, to match with card numbers, (card id is some hash)
-trello_cards.sort(key=sortByCreationDate)
+trello_cards.sort(key=lambda x: x.card_created_date)
 
 completed_jira_transition = None
 
