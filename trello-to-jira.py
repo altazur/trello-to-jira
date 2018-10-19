@@ -88,7 +88,10 @@ for card in trello_cards:
         for attachment in trello_attachments:
             if os.path.exists('attachments/' + card.id) is False:
                 os.mkdir('attachments/' + card.id)
-            urllib.request.urlretrieve(attachment['url'], 'attachments/' + card.id + '/' + attachment["name"])
+            try:
+                urllib.request.urlretrieve(attachment['url'], 'attachments/' + card.id + '/' + attachment["name"])
+            except Exception:
+                print("Failed to download attachment. Skipping")
             try:
                 jira.add_attachment(issue, open('attachments/' + card.id + '/' + attachment["name"], 'rb'))
                 print("Attached " + attachment["name"] + " to " + issue.key)
