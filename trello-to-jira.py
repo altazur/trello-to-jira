@@ -75,14 +75,16 @@ for card in trello_cards:
 
     # comment fields: text
     trello_comments = card.fetch_comments(force=True)
-
     if len(trello_comments) != 0:
-        print("Found comments.")
+        print("Found comments. Starting..")
+        for comment in trello_comments:
+            print('Creating comment by ' + comment['memberCreator']['username'] + ' to ' + issue.key)
+            jira.add_comment(issue, comment['data']['text'])
 
     # attachment fields: url, name
     trello_attachments, attachments = card.fetch_attachments(force=True), []
     if len(trello_attachments) != 0:
-        print("Found card attachments. Downloading...")
+        print("Found attachments. Downloading...")
         for attachment in trello_attachments:
             if os.path.exists('attachments/' + card.id) is False:
                 os.mkdir('attachments/' + card.id)
