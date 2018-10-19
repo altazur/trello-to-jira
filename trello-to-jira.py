@@ -1,4 +1,6 @@
 import os
+import json
+import urllib.request
 from trello import TrelloClient
 from dotenv import load_dotenv
 from jira import JIRA
@@ -52,14 +54,6 @@ trello_cards.sort(key=lambda x: x.card_created_date)
 completed_jira_transition = None
 
 for card in trello_cards:
-    # text == text body of card
-    # print(card.fetch_comments(force=True))
-
-    # fields: url, name
-    # attachments = card.fetch_attachments(force=True)
-
-    jira.add_attachment
-
     issue = {
         "project": {"key": jira_project.key},
         "summary": card.name,
@@ -67,14 +61,31 @@ for card in trello_cards:
         "issuetype": {"name": "Task"},
     }
 
-    # issue = jira.create_issue(issue)
-    # print(issue.key + " migrated.")
-    # if completed_jira_transition is None:
-    #     transitions = jira.transitions(issue)
-    #     for i, transition in enumerate(transitions):
-    #         print(str(i) + ". " + transition["name"])
-    #     completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
-    #
-    # if card.list_id == trello_done_list.id:
-    #     jira.transition_issue(issue, completed_jira_transition["id"])
-    #     print(issue.key + " moved to " + completed_jira_transition["name"])
+    issue = jira.create_issue(issue)
+    print(issue.key + " migrated.")
+    if completed_jira_transition is None:
+        transitions = jira.transitions(issue)
+        for i, transition in enumerate(transitions):
+            print(str(i) + ". " + transition["name"])
+        completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
+
+    if card.list_id == trello_done_list.id:
+        jira.transition_issue(issue, completed_jira_transition["id"])
+        print(issue.key + " moved to " + completed_jira_transition["name"])
+
+    # comment fields: text
+    trello_comments = card.fetch_comments(force=True)
+
+    if len(trello_comments) != 0:
+        print("Found comments.")
+
+    # attachment fields: url, name
+    trello_attachments, attachments = card.fetch_attachments(force=True), []
+    if len(trello_attachments) != 0:
+        print("Found card attachments. Downloading...")
+        for attachment in trello_attachments:
+            if os.path.exists('attachments/' + card.id) is False:
+                os.mkdir('attachments/' + card.id)
+            urllib.request.urlretrieve(attachment['url'], 'attachments/' + card.id + '/' + attachment["name"])
+            jira.add_attachment(issue, open('attachments/' + card.id + '/' + attachment["name"], 'rb'))
+            print("Attached " + attachment["name"] + " to " + issue.key)
