@@ -61,11 +61,10 @@ for card in trello_cards:
     issue = jira.create_issue(issue)
     if completed_jira_transition is None:
         transitions = jira.transitions(issue)
-        for i, transition in transitions:
-            print(str(i) + ". " + transition.name)
+        for i, transition in enumerate(transitions):
+            print(str(i) + ". " + transition["name"])
         completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
 
-    # if card.list_id == trello_done_list.id:
-    jira.transition_issue(issue, completed_jira_transition)
+    if card.list_id == trello_done_list.id:
+        jira.transition_issue(issue, completed_jira_transition["id"])
 
-    exit()
