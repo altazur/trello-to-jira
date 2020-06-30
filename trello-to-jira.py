@@ -31,11 +31,13 @@ if len(all_boards) <= num or num < 0:
 trello_board = all_boards[num]
 print("Using " + trello_board.name)
 
-trello_boards = trello_board.all_lists()
+trello_columns = trello_board.all_lists()
+"""
 for i, tlist in enumerate(trello_boards):
     print(str(i) + ". " + tlist.name)
-trello_done_list = trello_boards[int(input("Which board is the completed board: "))]
+trello_done_list = trello_boards[int(input("Which column is the completed column: "))]
 print("Cool, we'll be using  '" + trello_done_list.name + "'.")
+"""
 
 print("Fetching Jira projects...")
 jira_projects = jira.projects()
@@ -51,7 +53,9 @@ trello_cards = trello_board.all_cards()
 # Sort cards by creation date, to match with card numbers, (card id is some hash)
 trello_cards.sort(key=lambda x: x.card_created_date)
 
+"""
 completed_jira_transition = None
+"""
 
 for card in trello_cards:
     issue = {
@@ -63,15 +67,42 @@ for card in trello_cards:
 
     issue = jira.create_issue(issue)
     print(issue.key + " migrated.")
+
+    # Search current card column name(status)
+    card_status_name = None
+    for column in trello_columns:
+        if card.list_id == column.id:
+            card_status_name = column.name
+            break
+
+    # Search jira status(transition) equivalent by name
+    jira_transitions = jira.transitions(issue)
+    jira_status = None
+    for transition in jira_transitions:
+        if transition['name'].lstrip("Move to ") == card_status_name: # lstrip("Move to") should be in case of automatic jira workflow creation after first import from jira to trello
+            jira_status = transition
+
+    if card_status_name is None: # It's not gonna happen btw
+        print(f"Card column name not found for card {card.id}")
+
+    if jira_status is None:
+        jira_status = jira_transitions[0]
+        print(f"Jira status equivalent not found. Issue {issue.id} will be moved to first jira project status {jira_status['name']}")
+
+    jira.transition_issue(issue, jira_status["id"])
+    print(issue.key + " moved to " + jira_status["name"])
+    """
     if completed_jira_transition is None:
         transitions = jira.transitions(issue)
         for i, transition in enumerate(transitions):
             print(str(i) + ". " + transition["name"])
         completed_jira_transition = transitions[int(input("Please select the 'done' board in Jira: "))]
-
+    """
+    """
     if card.list_id == trello_done_list.id:
         jira.transition_issue(issue, completed_jira_transition["id"])
         print(issue.key + " moved to " + completed_jira_transition["name"])
+    """
 
     # comment fields: text
     trello_comments = card.fetch_comments(force=True)
